@@ -1,0 +1,302 @@
+<?xml version="1.0" encoding="UTF-8" ?> 
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.gw">
+
+
+<select id="user_list" resultType="com.gw.app.dto.User_dto">
+<!-- 
+	SELECT * FROM gw_user
+	JOIN gw_team ON #{team_idx} = #{team_idx}
+	JOIN gw_position ON #{position_idx} = #{position_idx}
+	
+ -->
+ SELECT * FROM gw_user
+JOIN gw_team ON gw_user.team_idx = gw_team.team_idx
+JOIN gw_position ON gw_user.position_idx = gw_position.position_idx order by user_idx desc	
+	
+</select>
+
+<insert id="insert_user" parameterType="com.gw.app.dto.User_dto">
+	insert into gw_user values (null, #{user_pw},#{user_name},#{team_idx},#{position_idx},#{user_day},#{user_tel},#{user_email},#{user_add},#{user_imgname},#{user_imgpath}, DEFAULT)
+
+</insert>
+	
+<select id="logindo" resultType="Integer">
+select count(*) from gw_user where user_idx=#{user_idx} and user_pw=#{user_pw}
+
+</select>
+
+<select id="login_rank" resultType="Integer">
+select user_rank from gw_user where user_idx=#{user_idx} 
+
+</select>
+
+
+<insert id="insert_work" parameterType="com.gw.app.dto.Work_dto">
+
+	
+INSERT INTO gw_work VALUES(NULL, #{user_idx}, NOW(), NULL);
+
+</insert>
+
+
+
+<!--  
+
+유저 및 로그인
+
+
+-->
+
+
+
+
+
+
+
+<update id="work_update" parameterType="com.gw.app.dto.Work_dto">
+update gw_work set work_off = NOW() WHERE DATE(work_on) = DATE(#{today}) AND user_idx = #{user_idx}
+</update>
+
+
+<select id="work_list"  resultType="com.gw.app.dto.Work_dto">
+SELECT * FROM gw_work JOIN gw_user ON gw_work.user_idx = gw_user.user_idx ORDER BY work_idx DESC
+</select>
+
+<!-- 개인 사원 전용 출퇴근 리스트 페이지 -->
+	<select id="user_work_list" resultType="com.gw.app.dto.Work_dto">
+		select * from gw_work where user_idx = #{user_idx} ORDER BY work_idx DESC 
+	</select>
+
+<select id="loginname"  resultType="String">
+select user_name from gw_user where user_idx=#{user_idx} 
+
+</select>
+
+<select id="workon"  resultType="com.gw.app.dto.Work_dto">
+select work_off from gw_work where user_idx=#{user_idx} 
+
+</select>
+
+
+
+<!--  
+	출퇴근
+
+-->
+
+
+<insert id="insert_email" parameterType="com.gw.app.dto.Email_dto">
+
+INSERT INTO gw_email VALUES(NULL, #{user_idx}, #{email_re}, #{email_title}, #{email_content}, NULL, NULL, NULL, NOW());
+
+</insert>
+
+<select id="list_email" resultType="com.gw.app.dto.Email_dto"> 
+
+SELECT * FROM gw_email 
+JOIN gw_user USING(user_idx) WHERE email_re = #{email_re} order by email_idx desc LIMIT #{pageStart}, #{pageNum};
+
+</select>
+
+<select id="email_read" resultType="com.gw.app.dto.Email_dto">
+SELECT * FROM gw_email JOIN gw_user USING(user_idx) WHERE email_idx = #{email_idx}
+
+</select>
+
+<!-- 이메일 삭제 -->
+<delete id="emaildelete" parameterType="com.gw.app.dto.Email_dto">
+	DELETE FROM gw_email WHERE email_idx=#{email_idx};
+</delete>
+
+
+<delete id="email_read_delete" parameterType="com.gw.app.dto.Email_dto">
+	DELETE FROM gw_email WHERE email_idx=#{email_idx};
+
+</delete>
+
+
+
+<select id="sent_email" resultType="com.gw.app.dto.Email_dto"> 
+
+<!-- 
+SELECT * FROM gw_email 
+JOIN gw_user USING(user_idx) WHERE user_idx = #{user_idx} or email_re=#{email_re} order by email_idx desc
+ -->
+<!-- 
+SELECT * FROM gw_email 
+JOIN gw_user USING(user_idx) WHERE user_idx= #{user_idx} order by email_idx DESC;
+ -->
+ 
+SELECT *, 
+(SELECT user_name FROM gw_user WHERE gw_email.email_re = gw_user.user_idx) AS re_name
+FROM gw_email JOIN gw_user USING (user_idx) WHERE user_idx = #{user_idx}
+ORDER BY email_idx desc;
+
+
+<!-- 
+SELECT * FROM gw_email 
+JOIN gw_user USING(user_idx) WHERE user_idx = #{user_idx} and email_re=#{email_re} order by email_idx DESC;
+ -->
+</select>
+
+
+<select id="Email_list_page" resultType="Integer">
+
+select count(*) from gw_email WHERE email_re = #{email_re}
+
+</select>
+
+
+
+
+
+<!-- 
+이메일
+
+ -->
+
+<!-- 공지사항 -->
+
+	<select id="notice_list" resultType="com.gw.app.dto.Notice_dto">
+		SELECT * FROM gw_notice 
+		JOIN gw_user USING(user_idx) WHERE user_idx ORDER BY notice_idx desc LIMIT #{pageStart}, #{perpageNum}
+	</select>
+
+<select id="notice_read" resultType="com.gw.app.dto.Notice_dto">
+SELECT * FROM gw_notice join gw_user using(user_idx) WHERE notice_idx = #{notice_idx};
+</select>
+
+
+<insert id="notice_insert" parameterType="com.gw.app.dto.Notice_dto">
+INSERT INTO gw_notice VALUES(NULL, #{user_idx}, #{notice_title}, #{notice_content}, DEFAULT, NOW());
+
+</insert>
+
+<update id="notice_hit" parameterType="Integer">
+	UPDATE gw_notice SET notice_count=notice_count+1 where notice_idx = #{notice_idx}
+
+</update>
+
+<!--익명게시판  -->
+<select id="board_list" resultType="com.gw.app.dto.Board_dto">
+SELECT *, (SELECT COUNT(*) AS cnt FROM board_comm WHERE board_comm.board_idx = gw_board.board_idx) as comm_cnt FROM gw_board 
+JOIN gw_user USING(user_idx) ORDER BY board_idx desc
+</select>
+
+<select id="board_read" resultType="com.gw.app.dto.Board_dto">
+SELECT * FROM gw_board WHERE board_idx = #{board_idx};
+
+</select>
+
+<update id="board_hit" parameterType="Integer">
+	UPDATE gw_board SET board_count=board_count+1 where board_idx = #{board_idx}
+
+</update>
+
+<insert id="board_insert" parameterType="com.gw.app.dto.Board_dto">
+INSERT INTO gw_board VALUES(NULL, #{user_idx}, #{board_title}, #{board_content}, DEFAULT, NOW())
+
+</insert>
+
+
+<!-- 댓글 -->
+<insert id="comm_insert" parameterType="com.gw.app.dto.Board_comm_dto">
+	INSERT INTO board_comm VALUES(NULL,#{board_idx}, #{user_idx},  #{comm_cotent}, NOW());
+
+
+</insert>
+
+<select id="comm_list" resultType="com.gw.app.dto.Board_comm_dto">
+SELECT * FROM board_comm WHERE board_idx= #{board_idx};
+</select>
+
+<delete id="board_delete" parameterType="Integer">
+
+DELETE FROM gw_board WHERE board_idx=#{board_idx};
+</delete>
+
+
+
+<!-- gw_position DB 관련 mapper -->
+	<select id="position_list" resultType="com.gw.app.dto.Position_dto">
+		select * from gw_position
+	</select>
+	
+	<!-- gw_team DB 관련 mapper -->
+	<select id="team_list" resultType="com.gw.app.dto.Team_dto">
+		select * from gw_team
+	</select>
+	
+	<!-- 자료실 관련 부분 -->
+	<!-- 자료실 목록 가져오기 -->
+	<select id="dataroom_list" resultType="com.gw.app.dto.Data_dto">
+		SELECT * FROM gw_data_room join gw_user using(user_idx) WHERE data_idx > 0 ORDER BY data_idx DESC, data_date DESC LIMIT #{pageStart}, #{perpageNum}
+	</select>
+	<!-- 자료실 리드 페이지 -->
+	<select id="dataroom_read" resultType="com.gw.app.dto.Data_dto">
+		select * from gw_data_room join gw_user using(user_idx) where data_idx = #{data_idx}
+	</select>
+	<!-- 자료실 insert -->
+	<insert id="dataroom_insert" parameterType="com.gw.app.dto.Data_dto">
+		INSERT INTO gw_data_room VALUES (NULL, #{user_idx}, #{data_title}, #{data_up}, #{data_content}, now(), #{data_uppath})
+	</insert>
+	<!-- 자료실 파일 다운로드를 위한 것이지만 삭제를 위해 값을 뽑아옴 -->
+	<select id="dataroom_download" resultType="map">
+		SELECT data_up FROM gw_data_room WHERE data_idx=#{data_idx};
+	</select>
+	<!-- 자료실 게시글 파일 삭제 -->
+	<delete id="dataroom_delete" parameterType="com.gw.app.dto.Data_dto">
+		delete from gw_data_room where data_idx = #{data_idx}
+	</delete>
+	<!-- 자료실 게시글 수정 ver1 자료 수정할 경우-->
+	<update id="dataroom_update1" parameterType="com.gw.app.dto.Data_dto">
+		update gw_data_room set data_title = #{data_title}, data_content = #{data_content}, data_up=#{data_up}, data_uppath=#{data_uppath} where data_idx = #{data_idx}
+	</update>
+	<!-- 자료실 게시글 수정 ver2 자료 수정 없을 경우-->
+	<update id="dataroom_update2" parameterType="com.gw.app.dto.Data_dto">
+		update gw_data_room set data_title = #{data_title}, data_content = #{data_content} where data_idx = #{data_idx}
+	</update>
+	
+	<!-- 페이징 처리를 위한 구문  -->
+	<select id="dataroom_paging" resultType="Integer"> 
+		select count(*) from gw_data_room
+	</select>
+	
+		<!-- 출퇴근 오늘 출근 누르면 더이상 출근 안 눌러지게 하는 것을 위해 조회하기 -->
+	<select id="work_inck" resultType="Integer">
+		SELECT COUNT(*) FROM gw_work WHERE DATE(work_on) = DATE(#{today}) AND user_idx = #{user_idx}
+	</select>
+	
+	<!-- 퇴근 버튼 중복 불가 처리를 위한 조회 -->
+	<select id="work_offck" resultType="Integer">
+		SELECT COUNT(*) FROM gw_work WHERE DATE(work_on) = DATE(#{today}) AND DATE(work_off) = DATE(#{today}) AND user_idx = #{user_idx}
+	</select>
+	
+	<!-- 익명게시판 댓글 카운트 -->
+	<select id="comm_cnt" resultType="Integer">
+		select count(*) from board_comm where board_idx = #{board_idx}
+	</select>
+	
+	<!-- 개인 사원 페이징 처리를 위한 구문  -->
+	<select id="user_work_paging" resultType="Integer"> 
+		select count(*) from gw_work where user_idx = #{user_idx}
+	</select>
+	
+	<!-- 공지사항 업데이트 구문 -->
+	<update id="notice_update" parameterType="com.gw.app.dto.Notice_dto">
+		update gw_notice set notice_title = #{notice_title}, notice_content = #{notice_content} where notice_idx = #{notice_idx}
+	</update>
+	
+	<!-- 공지사항 페이징을 위한 구문 -->
+	<select id="notice_paging" resultType="Integer">
+		select count(*) from gw_notice
+	</select>
+	
+	<!-- 공지사항 딜리트 처리를 위한 구문 -->
+	<delete id="notice_delete" parameterType="com.gw.app.dto.Notice_dto">
+		delete from gw_notice where notice_idx = #{notice_idx}
+	</delete>
+</mapper>
