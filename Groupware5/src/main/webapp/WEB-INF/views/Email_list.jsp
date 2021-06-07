@@ -67,20 +67,20 @@ tr:hover{
 <div id="tests">
 	<div >
 		<c:if test="${prev == true }">
-			<a href="Email_list?page=${startPage-1 }&email_re=${email.email_re}">이전</a>
+			<a href="Email_list?page=${startPage-1 }&email_re=${sessionScope.user_idx}">이전</a>
 		</c:if>
-		<c:forEach var="page" begin="${startPage }" end="${end_Page }">
+		<c:forEach var="page" begin="${startPage }" end="${end_Page}">
 			<c:choose>
 				<c:when test="${page eq page_page }">
 					<span style="font-weight: bold;">${page}</span>
 				</c:when>
 				<c:otherwise>
-					<a href="Email_list?page=${page}&email_re=${email.email_re}">${page}</a> <!--이부분이해  -->
+					<a href="Email_list?page=${page}&email_re=${sessionScope.user_idx}">${page}</a> <!--이부분이해  -->
 				</c:otherwise>
 			</c:choose>
 		</c:forEach>
 		<c:if test="${next == true and end_Page > 0 }">
-			<a href="Email_list?page=${end_Page+1 }&email_re=${email.email_re}">다음</a>
+			<a href="Email_list?page=${end_Page+1 }&email_re=${sessionScope.user_idx}">다음</a>
 		</c:if>
 	</div>
 	
@@ -88,6 +88,7 @@ tr:hover{
 		<input type="button" value="메일삭제" onclick="submitCheck()">
 		<input type="button" value="메일쓰기" onclick="location.href='Email_insert'"> 
 		<input type="button" value="보낸메일함" onclick="location.href='Email_SentLetter?user_idx=${sessionScope.user_idx}'"> 
+		
 	</div>
 </div>
 </main>

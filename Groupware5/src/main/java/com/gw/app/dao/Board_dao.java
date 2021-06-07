@@ -41,4 +41,9 @@ public class Board_dao {
 	}
 	
 	
+	public int board_page() {
+		
+		return sqlSession.selectOne("com.gw.board_page");
+	}
+	
 }

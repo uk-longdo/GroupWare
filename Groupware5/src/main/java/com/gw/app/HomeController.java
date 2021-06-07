@@ -417,24 +417,30 @@ public class HomeController {
 		return "work_userlist";
 	}
 	
+
+	
 	
 	
 	
 	
 	//받은메일함
 	@RequestMapping("Email_list")
-	public String Email_list(int user_idx, int email_re, Model model,@RequestParam(required = false, defaultValue = "1")int page ) {
+	public String Email_list(int email_re, Model model ,@RequestParam(required = false, defaultValue = "1")int page ) {
 		System.out.println("이메일리 받은편지"+email_re);
-
-		int pageNum = 2;
+		
+		
+		int pageNum = 3;
 		
 		int pageStart = (page-1) * pageNum;
 		Map<String, Object> map = new HashMap<String, Object>();
+		
 		map.put("email_re", email_re);
 		map.put("pageStart", pageStart);
 		map.put("pageNum", pageNum);
 		
-		int totalCnt = edao.Email_list_page(email_re);
+		int totalCnt = edao.Email_list_a(email_re);
+		System.out.println("이메일re"+ edao.Email_list_a(email_re));
+		
 		int temp_EndPage = (int) (Math.ceil(totalCnt / (double) pageNum)); // 마지막 페이지
 		
 		int dispageNum = 10; // 게시판 화면에 한번에 보여질 페이지의 개수
@@ -454,7 +460,7 @@ public class HomeController {
 		}
 		
 		
-		model.addAttribute("email", edao.list_email(email_re));
+		model.addAttribute("email", edao.list_email(map));
 		
 		model.addAttribute("temp_EndPage", temp_EndPage);
 		model.addAttribute("end_Page", end_Page);
@@ -516,11 +522,17 @@ public class HomeController {
 	
 	@RequestMapping("Email_read")
 	public String Email_read(Model model,int email_idx) {
+		Map<String, Object> map = new HashMap<String, Object>();
+		map.put("email_idx", email_idx);
 		
+		edao.Email_readtime(email_idx);
 		model.addAttribute("email_re", edao.email_read(email_idx));
 		
 		return "Email_read";
 	}
+	//읽은시간 메소드
+
+	
 	
 	//보낸편지함
 	@RequestMapping("Email_read_sent")
@@ -544,11 +556,49 @@ public class HomeController {
 	
 	//보낸메일함
 		@RequestMapping("Email_SentLetter")
-		public String Email_SentLetter(int user_idx, Model model, String re_name) {
+		public String Email_SentLetter(int user_idx, Model model,  @RequestParam(required = false, defaultValue = "1")int page) {
 			System.out.println(user_idx);
-			System.out.println("받는사람"+edao.sent_email(user_idx));
-			model.addAttribute("email3", edao.sent_email(user_idx));
 		
+			
+			int pageNum = 3;
+			
+			int pageStart = (page-1) * pageNum;
+			Map<String, Object> map = new HashMap<String, Object>();
+			map.put("user_idx", user_idx);
+			map.put("pageStart", pageStart);
+			map.put("pageNum", pageNum);
+			 
+			System.out.println("보여질개수"+pageNum);
+			
+			System.out.println("카웉트 갯수 유저아이디="+edao.Email_list_page(user_idx));
+			
+			int totalCnt = edao.Email_list_page(user_idx);
+			int temp_EndPage = (int) (Math.ceil(totalCnt / (double) pageNum));
+			
+			System.out.println("카운트"+totalCnt);
+			int dispageNum = 10; // 게시판 화면에 한번에 보여질 페이지의 개수
+			int end_Page =  (int) (Math.ceil(page / (double) dispageNum) * dispageNum);
+			int startPage =  (end_Page - dispageNum) + 1;
+			
+			
+			boolean prev = startPage == 1 ? false : true;
+			//현재 보여주는 dispageNum의 시작 페이지가 1이냐 
+			boolean next = end_Page * pageNum >= totalCnt ? false : true;
+			//endPage * perpageNum 토탈보다 크거나 같냐
+			if(end_Page > temp_EndPage) {
+				end_Page = temp_EndPage;
+			}
+			
+			
+			model.addAttribute("email3", edao.sent_email(map));
+			
+			model.addAttribute("temp_EndPage",temp_EndPage);
+			model.addAttribute("end_Page", end_Page);
+			model.addAttribute("startPage", startPage);
+			model.addAttribute("prev", prev);
+			model.addAttribute("next", next);
+			model.addAttribute("page_page", page);
+			
 			return "Email_SentLetter";
 		}
 		
@@ -558,7 +608,7 @@ public class HomeController {
 		public String Email_delete_sent(int email_idx,String user_idx) {
 			Map<String, Object> map = new HashMap<String, Object>();
 			map.put("email_idx", email_idx);
-			System.out.println("suer 번호"+user_idx);
+			System.out.println("user 번호"+user_idx);
 			System.out.println("이메일 번호"+email_idx);
 			edao.email_read_delete(map);
 			return "redirect:/Email_SentLetter?user_idx="+user_idx;
@@ -726,10 +776,39 @@ public class HomeController {
 
 		///익명 게시판
 		@RequestMapping("Gw_Boardlist")
-		public String Gw_Boardlist(Model model) {
-			Map<String, Object> map = new HashMap<String, Object>();
-			model.addAttribute("board", bdao.board_list(map));
+		public String Gw_Boardlist(Model model,@RequestParam(required = false, defaultValue = "1")int page ) {
 			
+			int pageNum = 3; //보여질 개수
+			int pageStart = (page-1) * pageNum;
+			
+			Map<String, Object> map = new HashMap<String, Object>();
+			
+			map.put("pageStart", pageStart);
+			map.put("pageNum", pageNum);
+			
+			int totalCount = bdao.board_page();  //전체 게시글 카운트
+			
+			System.out.println("페이지 카운트"+bdao.board_page());
+			int tempEndPage = (int) (Math.ceil(totalCount / (double) pageNum)); //여기 질문
+			int dispageNum = 10; //[1],[2] ... [10]번까지 보임
+			int end_Page =  (int) (Math.ceil(page / (double) dispageNum) * dispageNum); //여기 질문
+			int startPage =  (end_Page - dispageNum) + 1;  //스타트 페이지와 페이지 스타트의 차이점?
+			
+			boolean prev = startPage == 1 ? false : true;
+			boolean next = end_Page * pageNum >= totalCount ? false : true;
+			if(end_Page > tempEndPage) {
+				end_Page = tempEndPage;
+				//이거 선언 안 해 주면은 dispageNum이 설정된 페이지 수만큼 나오기 때문에 꼭 설정해 줘야 댐
+			}
+			
+			
+			model.addAttribute("board", bdao.board_list(map));
+			model.addAttribute("tempEndPage", tempEndPage);
+			model.addAttribute("startPage", startPage);
+			model.addAttribute("end_Page", end_Page);
+			model.addAttribute("prev", prev);
+			model.addAttribute("next", next);
+			model.addAttribute("page_page", page);
 			
 			return "Gw_Boardlist";
 		} 
@@ -821,7 +900,7 @@ public class HomeController {
 					map.put("perpageNum", perpageNum);
 					
 					int totalCount = ddao.dataroom_paging();  //전체 데이터의 개수
-					int tempEndPage = (int) (Math.ceil(totalCount / (double) perpageNum)); // 마지막 페이지
+					int tempEndPage = (int) (Math.ceil(totalCount / (double) perpageNum)); // 마지막 페이지 //여기 질문 하기 
 					//위에 까지가 페이지 안에 게시글 끊어서 보여주는 것 
 					
 					int dispageNum = 10; // 게시판 화면에 한번에 보여질 페이지의 개수

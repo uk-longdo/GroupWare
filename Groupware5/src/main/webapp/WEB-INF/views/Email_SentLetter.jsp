@@ -12,7 +12,12 @@ tr:hover{
 	cursor: pointer;
 	color: blue;
 }
-
+#tests{
+		
+		display: flex;
+		justify-content: space-between;
+		padding : 0.3rem;
+	}
 </style>
 </head>
 <body>
@@ -37,6 +42,7 @@ tr:hover{
 		
 		<td>제목</td>
 		<td>시간</td>
+		<td>읽은 시간</td>
 	</tr>
 	
 <c:forEach var="email3" items="${email3 }">
@@ -46,21 +52,55 @@ tr:hover{
 		</td>
 		
 		<td onclick="location.href='Email_read_sent?email_idx=${email3.email_idx}'">${email3.email_idx}</td>
-		
 		<td onclick="location.href='Email_read_sent?email_idx=${email3.email_idx}'">${email3.re_name}</td>
-		
 		<td onclick="location.href='Email_read_sent?email_idx=${email3.email_idx}'">${email3.email_title}</td>
 		<td onclick="location.href='Email_read_sent?email_idx=${email3.email_idx}'">${email3.email_day}</td>
 	
+	<%-- 
+	<c:choose>
+		<c:when test="${email_readtime eq null}">
+				<td>읽지않음</td>
+		</c:when>
+	</c:choose>
+	 --%>	
+		<td onclick="location.href='Email_read_sent?email_idx=${email3.email_idx}'">${email3.email_readtime}</td>	
+	
+	
+		
 	</tr>
 
 </c:forEach>
 	
 </table>
 
+<div id="tests">
+	<div>
+		<c:if test="${prev == true }">
+			<a href="Email_SentLetter?page=${startPage-1 }&user_idx=${sessionScope.user_idx}">이전</a>
+		</c:if>
+		
+		<c:forEach var="page" begin="${startPage }" end="${end_Page }">
+			<c:choose>
+				<c:when test="${page eq page_page }">
+					<span style="font-weight: bold;">${page}</span>
+				</c:when>
+				
+				<c:otherwise>
+					<a href="Email_SentLetter?page=${page}&user_idx=${sessionScope.user_idx}">${page }</a>
+				</c:otherwise>
+			</c:choose>
+		</c:forEach>
+		
+		<c:if test="${next == true and end_Page > 0 }">
+			<a href="Email_SentLetter?page=${end_Page+1}&user_idx=${sessionScope.user_idx}">다음</a>
+		</c:if>
+	</div>
+
+</div>
+
 	<input type="button" value="메일삭제" onclick="submitCheck()">
-
-
+	<input type="button" value="메일쓰기" onclick="location.href='Email_insert'"> 
+	<input type="button" value="받은메일함" onclick="location.href='Email_list?email_re=${sessionScope.user_idx}'"> 
 
 </main>
 </div>

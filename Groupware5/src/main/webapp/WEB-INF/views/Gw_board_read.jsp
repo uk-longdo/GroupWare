@@ -44,15 +44,34 @@
 				<td><span style="padding-left:0.7rem; font-size:1.3rem;">댓글 ${comm_cnt}</span></td>
 			</tr>
 			<c:forEach var="comm" items="${comm}">
+			
 			<tr>
-				<td style=" padding-top: 0px; font-size:0.8rem;">
-					<span style="padding-left:0.7rem; font-size:0.9rem;">익명</span>
-					<span style="padding-left:0.7rem; font-size:0.9rem;">${comm.comm_cotent}</span>
-					<span style="padding-left:0.7rem;">${comm.comm_date}</span>
+				<td style=" padding-top: 0px; font-size:0.8rem;" class="commentlist">
 					
+					<span style="padding-left:0.7rem; font-size:0.9rem;">익명</span>
+					
+					<span style="padding-left:0.7rem; font-size:0.9rem;" class="comcontent">${comm.comm_cotent}</span>
+					<span style="padding-left:0.7rem;">${comm.comm_date}</span>
+					<c:choose>
+						<c:when test="${sessionScope.user_idx eq comm.user_idx }">
+							<input type="button" value="수정" class="divblock">
+							<input type="button" value="삭제" class="cmtdel" >
+							
+						</c:when>
+					</c:choose>
+			<!--  
+					<form action="update_comm" class="up_comm" method="post"> 
+					<textarea style="padding-left:0.7rem; font-size:0.9rem;">${comm.comm_cotent}</textarea>
+					<input type="hidden" name="comm_idx" value="${comm.comm_idx}">
+                  <input type="hidden" name="board_idx" value="${comm.board_idx}">
+                   <input type="submit" id="subbtn1" value="수정완료">
+                   <input type="button" class="subbtn2" value="취소" onclick="reback()">
+				</form>
+			-->
 				</td>
 			</tr>
 			</c:forEach>
+			
 			<tr>
 				<td>
 					<form action="comm" method="post">
@@ -88,6 +107,38 @@
 </div>
 <script src="//code.jquery.com/jquery-3.3.1.min.js"></script>
 <script  src="http://code.jquery.com/jquery-latest.min.js"></script>
+<script type="text/javascript">
+ $(document).ready(function(){
+      		
+      		$(".up_comm").hide();
+      	
+         $(".divblock").click(function(){
+            $(".up_comm").css("display","none");
+            $(this).parents(".commentlist").find("form").css("display","block");
+            $(".comcontent").hide();
+            $(".cmtdel").hide();
+            $("this").hide();
+         });
+            
+            
+         $("#subbtn1").click(function() { 
+            $(".up_comm").submit();
+         });
+         
+          $("#delete").click(function(){
+         
+         	alert("삭제하시겠습니까?");
+      	});
+         
+      });
+            
+      function reback(){
+         $(".upfrm").hide();
+         $(".comcontent").show();
+         $(".cmtdel").show();
+         $(".divblock").show();
+      }
 
+</script>
 </body>
 </html>

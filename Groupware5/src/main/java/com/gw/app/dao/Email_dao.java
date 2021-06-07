@@ -23,15 +23,16 @@ public class Email_dao {
 	}
 	
 	
-	public List<Email_dto> list_email(int email_re){
+	public List<Email_dto> list_email(Map<String, Object> map){
 		
 		
-		return sqlSession.selectList("com.gw.list_email", email_re);
+		return sqlSession.selectList("com.gw.list_email", map);
 	}
-	public List<Email_dto> sent_email(int user_idx){
+	
+	public List<Email_dto> sent_email(Map<String, Object> map){
 		
 		
-		return sqlSession.selectList("com.gw.sent_email", user_idx);
+		return sqlSession.selectList("com.gw.sent_email", map);
 	}
 	
 	public Email_dto email_read(int email_idx) {
@@ -51,9 +52,20 @@ public class Email_dao {
 	
 	//페이징 카운트
 	
-	public int Email_list_page(int email_re) {
+	public int Email_list_page(int user_idx) {
 		
-		return sqlSession.selectOne("com.gw.Email_list_page", email_re);
+		return sqlSession.selectOne("com.gw.Email_list_page",user_idx);
+	}
+	//보낸메일함 페이징 카운트
+	public int Email_list_a(int email_re) {
+		
+		return sqlSession.selectOne("com.gw.Email_list_a", email_re);
+	}
+	
+	//읽은시간 업데이트
+	public int Email_readtime(int email_idx) {
+		
+		return sqlSession.update("com.gw.Email_readtime",email_idx);
 	}
 	
 }

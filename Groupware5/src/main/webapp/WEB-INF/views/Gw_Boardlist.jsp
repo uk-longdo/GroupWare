@@ -12,7 +12,12 @@ tr:hover{
 	cursor: pointer;
 	color: black;
 }
-
+#tests{
+		
+		display: flex;
+		justify-content: space-between;
+		padding : 0.3rem;
+	}
 </style>
 </head>
 <body>
@@ -51,6 +56,26 @@ tr:hover{
 
 </table>
 
+<div id="tests">
+	<div>
+		<c:if test="${prev == true }">
+			<a href="Gw_Boardlist?page=${startPage-1 }">이전</a>
+		</c:if>
+		<c:forEach var="page" begin="${startPage }" end="${end_Page }">
+			<c:choose>
+				<c:when test="${page eq page_page }">
+					<span style="font-weight: bold;">${page }</span>
+				</c:when>
+				<c:otherwise>
+					<a href="Gw_Boardlist?page=${page}">${page }</a>
+				</c:otherwise>
+			</c:choose>
+		</c:forEach>
+		<c:if test="${next == true and end_Page > 0 }">
+			<a href="Gw_Boardlist?page=${end_Page+1 }">다음</a>		
+		</c:if>
+	</div>
+</div>
 
 
 </main>

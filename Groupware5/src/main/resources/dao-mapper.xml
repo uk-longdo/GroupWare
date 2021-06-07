@@ -133,7 +133,7 @@ JOIN gw_user USING(user_idx) WHERE user_idx= #{user_idx} order by email_idx DESC
 SELECT *, 
 (SELECT user_name FROM gw_user WHERE gw_email.email_re = gw_user.user_idx) AS re_name
 FROM gw_email JOIN gw_user USING (user_idx) WHERE user_idx = #{user_idx}
-ORDER BY email_idx desc;
+ORDER BY email_idx desc LIMIT #{pageStart}, #{pageNum}; 
 
 
 <!-- 
@@ -142,16 +142,29 @@ JOIN gw_user USING(user_idx) WHERE user_idx = #{user_idx} and email_re=#{email_r
  -->
 </select>
 
-
+<!-- 받은 메일함 페이징 -->
 <select id="Email_list_page" resultType="Integer">
+
+<!-- select count(*) from gw_email where email_re = #{email_re} -->
+
+SELECT COUNT(*) FROM gw_email WHERE user_idx = #{user_idx} 
+
+</select>
+<!-- 보낸 메일함 페이징 -->
+
+<select id="Email_list_a" resultType="Integer">
 
 select count(*) from gw_email WHERE email_re = #{email_re}
 
 </select>
 
-
-
-
+<!-- 이메일 읽은 시간 -->
+<update id="Email_readtime" parameterType="com.gw.app.dto.Email_dto">
+	<!-- 
+	UPDATE gw_email SET email_readtime=if(email_readtime=null, NOW(), email_readtime) WHERE email_idx = #{email_idx};
+	 -->
+	UPDATE gw_email SET email_readtime=NOW() WHERE email_idx =  #{email_idx} AND email_readtime IS NULL;
+</update>
 
 <!-- 
 이메일
@@ -183,7 +196,7 @@ INSERT INTO gw_notice VALUES(NULL, #{user_idx}, #{notice_title}, #{notice_conten
 <!--익명게시판  -->
 <select id="board_list" resultType="com.gw.app.dto.Board_dto">
 SELECT *, (SELECT COUNT(*) AS cnt FROM board_comm WHERE board_comm.board_idx = gw_board.board_idx) as comm_cnt FROM gw_board 
-JOIN gw_user USING(user_idx) ORDER BY board_idx desc
+JOIN gw_user USING(user_idx) ORDER BY board_idx desc LIMIT #{pageStart}, #{pageNum};
 </select>
 
 <select id="board_read" resultType="com.gw.app.dto.Board_dto">
@@ -217,6 +230,15 @@ SELECT * FROM board_comm WHERE board_idx= #{board_idx};
 
 DELETE FROM gw_board WHERE board_idx=#{board_idx};
 </delete>
+
+
+<!--  익명 게시판 페이징 -->
+<select id="board_page" resultType="Integer">
+
+SELECT COUNT(*) FROM gw_board
+</select>
+
+
 
 
 
